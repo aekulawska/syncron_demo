@@ -83,10 +83,10 @@ if st.button("Run Validation"):
                                 # Split content into sections
                                 sections = content.split('\n\n')
                                 
-                                # Extract and display status
-                                status_line = next((s for s in sections if "Overall Validation Status:" in s), "")
+                                # First, find and display the validation status
+                                status_line = next((s for s in sections if "Validation status:" in s), "")
                                 if status_line:
-                                    status = status_line.split(":")[1].strip()
+                                    status = status_line.split("Validation status:")[1].strip()
                                     status_color = {
                                         "GREEN": "🟢 #0f5132",
                                         "YELLOW": "🟡 #997404",
@@ -98,7 +98,7 @@ if st.button("Run Validation"):
                                         <div style="
                                             padding: 20px;
                                             border-radius: 10px;
-                                            margin-bottom: 20px;
+                                            margin: 25px 0;
                                             background-color: {status_color.split()[1]};
                                             color: white;
                                             font-weight: bold;
@@ -106,7 +106,7 @@ if st.button("Run Validation"):
                                             align-items: center;
                                         ">
                                             <span style="font-size: 24px; margin-right: 10px;">{status_color.split()[0]}</span>
-                                            <span>Overall Validation Status: {status}</span>
+                                            <span>Validation Status: {status}</span>
                                         </div>
                                         """,
                                         unsafe_allow_html=True
@@ -114,32 +114,58 @@ if st.button("Run Validation"):
 
                                 # Display the rest of the content in styled sections
                                 for section in sections:
-                                    if "Overall Validation Status:" not in section:
-                                        # Check if it's a main section header
-                                        if any(header in section for header in ["Detailed List of", "Recommendations for", "Conclusion:"]):
-                                            st.markdown(f"""
+                                    if "Validation status:" not in section:
+                                        # Check if it's a section header
+                                        if any(header in section for header in [
+                                            "Errors and warnings:", 
+                                            "Recommendations:", 
+                                            "Conclusion:"
+                                        ]):
+                                            # Display section header
+                                            header = section.split(':')[0] + ':'
+                                            st.markdown(
+                                                f"""
                                                 <div style="
                                                     margin-top: 30px;
                                                     margin-bottom: 15px;
-                                                    padding: 10px;
+                                                    padding: 12px 15px;
                                                     background-color: #f8f9fa;
                                                     border-left: 5px solid #0d6efd;
                                                     font-weight: bold;
+                                                    border-radius: 0 4px 4px 0;
                                                 ">
-                                                    {section.split(':')[0]}:
+                                                    {header}
                                                 </div>
-                                            """, unsafe_allow_html=True)
+                                                """, 
+                                                unsafe_allow_html=True
+                                            )
                                             
-                                            # If there's content after the colon, display it
+                                            # Display section content if any
                                             if ':' in section:
-                                                content_after_colon = section.split(':', 1)[1].strip()
-                                                if content_after_colon:
-                                                    st.markdown(content_after_colon)
+                                                content = section.split(':', 1)[1].strip()
+                                                if content:
+                                                    lines = content.split('\n')
+                                                    formatted_lines = []
+                                                    for line in lines:
+                                                        line = line.strip()
+                                                        if line:
+                                                            formatted_lines.append(f"&nbsp;&nbsp;&nbsp;&nbsp;{line}")
+                                                    
+                                                    formatted_content = "<br>".join(formatted_lines)
+                                                    st.markdown(
+                                                        f"""
+                                                        <div style="
+                                                            margin: 15px 0 20px 20px;
+                                                            line-height: 1.6;
+                                                        ">
+                                                            {formatted_content}
+                                                        </div>
+                                                        """,
+                                                        unsafe_allow_html=True
+                                                    )
                                         else:
                                             # Regular content
                                             st.markdown(section)
-                            else:
-                                st.error("No validation content found in the response.")
                         else:
                             st.error("Invalid response format")
                             
